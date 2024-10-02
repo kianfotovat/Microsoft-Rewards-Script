@@ -91,9 +91,10 @@ export function getSystemComponents(mobile: boolean): string {
 }
 
 export async function getAppComponents(mobile: boolean) {
-    const versions = await getEdgeVersions()
-    const edgeVersion = mobile ? versions.android : versions.windows as string
+    const edgeVersions = await getEdgeVersions()
+    const edgeVersion = mobile ? edgeVersions.android : edgeVersions.windows as string
     const edgeMajorVersion = edgeVersion?.split('.')[0]
+    const edgeReducedVersion = `${edgeMajorVersion}.0.0.0`
 
     const chromeVersion = await getChromeVersion()
     const chromeMajorVersion = chromeVersion?.split('.')[0]
@@ -102,6 +103,7 @@ export async function getAppComponents(mobile: boolean) {
     return {
         edge_version: edgeVersion as string,
         edge_major_version: edgeMajorVersion as string,
+        edge_reduced_version: edgeReducedVersion as string,
         chrome_version: chromeVersion as string,
         chrome_major_version: chromeMajorVersion as string,
         chrome_reduced_version: chromeReducedVersion as string

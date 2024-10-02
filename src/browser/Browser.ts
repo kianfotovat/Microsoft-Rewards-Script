@@ -9,6 +9,8 @@ import { loadSessionData, saveFingerprintData } from '../util/Load'
 
 import { AccountProxy } from '../interface/Account'
 
+import { getAppComponents } from '../util/UserAgent'
+
 /* Test Stuff
 https://abrahamjuliot.github.io/creepjs/
 https://botcheck.luminati.io/
@@ -40,7 +42,7 @@ class Browser {
 
         const sessionData = await loadSessionData(this.bot.config.sessionPath, email, this.bot.isMobile, this.bot.config.saveFingerprint)
 
-        const fingerpint = sessionData.fingerprint ? sessionData.fingerprint : this.generateFingerprint()
+        const fingerpint = sessionData.fingerprint ? sessionData.fingerprint : await this.generateFingerprint()
 
         const context = await newInjectedContext(browser, { fingerprint: fingerpint })
 
@@ -58,15 +60,30 @@ class Browser {
         return context
     }
 
-    generateFingerprint() {
+    async generateFingerprint() {
         const fingerPrintData = new FingerprintGenerator().getFingerprint({
             devices: this.bot.isMobile ? ['mobile'] : ['desktop'],
             operatingSystems: this.bot.isMobile ? ['android'] : ['windows'],
-            browserListQuery: 'last 2 edge version'
+            browsers: ['edge']
         })
-
+    
+        // Fetch app components to update browser version
+        let appComponents = await getAppComponents(this.bot.isMobile)
+    
+        // Check if user-agent header is defined and perform replacements
+        if (fingerPrintData.headers && fingerPrintData.headers['user-agent']) {
+            // Replace the Chrome version number
+            fingerPrintData.headers['user-agent'] = fingerPrintData.headers['user-agent'].replace(/(Chrome\/)[\d.]+/, `$1${appComponents.chrome_reduced_version}`)
+            fingerPrintData.fingerprint.navigator.userAgent = fingerPrintData.fingerprint.navigator.userAgent.replace(/(Chrome\/)[\d.]+/, `$1${appComponents.chrome_reduced_version}`)
+    
+            // Replace the Edge version number, preserving 'Edg/' or 'EdgA/'
+            fingerPrintData.headers['user-agent'] = fingerPrintData.headers['user-agent'].replace(/(EdgA?\/)[\d.]+/, `$1${appComponents.edge_reduced_version}`)
+            fingerPrintData.fingerprint.navigator.userAgent = fingerPrintData.fingerprint.navigator.userAgent.replace(/(EdgA?\/)[\d.]+/, `$1${appComponents.edge_reduced_version}`)
+        }
+    
         return fingerPrintData
     }
+    
 }
 
 export default Browser
