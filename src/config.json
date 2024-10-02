@@ -17,11 +17,11 @@
     "globalTimeout": 30000,
     "searchSettings": {
         "useGeoLocaleQueries": true,
-        "scrollRandomResults": true,
-        "clickRandomResults": true,
+        "scrollRandomResults": false,
+        "clickRandomResults": false,
         "searchDelay": {
-            "min": 10000,
-            "max": 20000
+            "min": 8000,
+            "max": 10000
         },
         "retryMobileSearch": true
     },
